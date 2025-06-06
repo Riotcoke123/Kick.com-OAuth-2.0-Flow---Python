@@ -1,84 +1,79 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<h1>Kick.com OAuth2 Token Handler</h1>
 
-</head>
-<body>
+<p>This project implements a FastAPI-based OAuth2 authorization flow with auto-refreshing tokens for Kick.com's API. It securely stores tokens and refreshes them automatically every 30 minutes.</p>
 
-<h1>Python OAuth 2.0 Flow for Kick.com</h1>
+<hr>
 
-<p>This is a simple Python script demonstrating how to perform an OAuth 2.0 authorization code flow with <a href="https://kick.com" target="_blank">Kick.com</a>. It helps you retrieve access and refresh tokens for accessing user-specific APIs.</p>
-
-<h2>⚙️ Requirements</h2>
+<h2>🔧 Prerequisites</h2>
 <ul>
-  <li>Python 3.x</li>
-  <li><code>requests</code> library (install via <code>pip install requests</code>)</li>
-</ul>
-
-<h2>📦 Setup</h2>
-
-<ol>
-  <li><strong>Register your application on Kick.com</strong> to obtain:
+  <li>Python 3.7+</li>
+  <li>Dependencies:
+    <pre><code>pip install fastapi uvicorn apscheduler requests python-dotenv</code></pre>
+  </li>
+  <li>A Kick Developer App with:
     <ul>
-      <li><code>CLIENT_ID</code></li>
-      <li><code>CLIENT_SECRET</code></li>
-      <li><code>REDIRECT_URI</code></li>
+      <li>Client ID</li>
+      <li>Client Secret</li>
+      <li>Redirect URI (e.g. http://localhost:8000/callback)</li>
     </ul>
   </li>
-  <li><strong>Update the script</strong> with your credentials:</li>
-</ol>
+</ul>
 
-<pre><code>CLIENT_ID = "your_client_id_here"
-CLIENT_SECRET = "your_client_secret_here"
-REDIRECT_URI = "http://localhost:8000/callback"  # Or your registered URI
+<hr>
+
+<h2>📁 Project Structure</h2>
+<pre><code>
+kick_oauth/
+├── main.py              &lt;-- FastAPI app
+├── token_utils.py       &lt;-- Token handling logic
+├── .env                 &lt;-- Store secrets (not committed)
+├── tokens.json          &lt;-- Stores current access/refresh tokens
 </code></pre>
 
-<ol start="3">
-  <li><strong>Install dependencies</strong>:</li>
-</ol>
+<hr>
 
-<pre><code>pip install requests</code></pre>
+<h2>⚙️ .env Example</h2>
+<pre><code>
+CLIENT_ID=your_kick_client_id
+CLIENT_SECRET=your_kick_client_secret
+REDIRECT_URI=http://localhost:8000/callback
+</code></pre>
+
+<hr>
 
 <h2>🚀 How to Use</h2>
-
 <ol>
-  <li>Run the script:</li>
-</ol>
-
-<pre><code>python kick_oauth.py</code></pre>
-
-<ol start="2">
-  <li>Visit the authorization URL printed in the terminal.</li>
-  <li>After authorizing, you’ll be redirected to your redirect URI with a <code>code</code> in the query params.</li>
-  <li>Paste that code back into the terminal when prompted.</li>
-  <li>You’ll receive and see:
-    <ul>
-      <li>Access Token</li>
-      <li>(Optional) Refresh Token</li>
-    </ul>
+  <li>Run the app:
+    <pre><code>python main.py</code></pre>
   </li>
+  <li>Your browser will open automatically and ask for Kick API authorization.</li>
+  <li>After authorization, your tokens are saved in <code>tokens.json</code>.</li>
+  <li>Tokens will refresh every 30 minutes using an internal job scheduler (APScheduler).</li>
 </ol>
 
-<h2>🧪 Example</h2>
+<hr>
 
-<pre><code>$ python kick_oauth.py
-Visit this URL to authorize:
-https://kick.com/oauth2/authorize?client_id=...&amp;redirect_uri=...&amp;response_type=code&amp;scope=user_read
-Paste the authorization code here: abc123
-Access Token: eyJ0eXAiOiJK...
-Refresh Token: None
-</code></pre>
-
-<h2>🛑 Notes</h2>
+<h2>🔁 Token Refresh Logic</h2>
+<p>APScheduler runs a background job every 30 minutes that:</p>
 <ul>
-  <li>Ensure your redirect URI is exactly as registered on Kick.com.</li>
-  <li>The <code>scope</code> can be adjusted depending on the permissions you need.</li>
+  <li>Reads <code>refresh_token</code> from <code>tokens.json</code></li>
+  <li>Posts it to Kick's token endpoint</li>
+  <li>Overwrites <code>tokens.json</code> with the new access and refresh tokens</li>
 </ul>
 
-<h2>📄 License</h2>
-<p>This project is licensed under the <strong>GNU General Public License (GPL)</strong>.</p>
-<p>You may copy, distribute, and modify the software as long as you track changes/dates in source files and keep the same license. Any derivative work must also be open-source and licensed under GPL.</p>
-<p>See the full license text here: <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank">https://www.gnu.org/licenses/gpl-3.0.en.html</a></p>
+<hr>
 
-</body>
-</html>
+<h2>🔒 Security Note</h2>
+<ul>
+  <li><strong>Never commit</strong> your <code>.env</code> or <code>tokens.json</code> to public repositories.</li>
+  <li>Consider encrypting token storage for production use.</li>
+</ul>
+
+<hr>
+
+<h2>📚 Useful Links</h2>
+<ul>
+  <li><a href="https://kick.com/">Kick.com</a></li>
+  <li><a href="https://fastapi.tiangolo.com/">FastAPI Documentation</a></li>
+  <li><a href="https://apscheduler.readthedocs.io/">APScheduler Docs</a></li>
+</ul>
